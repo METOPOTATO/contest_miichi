@@ -5,3 +5,7 @@ vscode/*
 __pycache__/
 *.pyc
 *.mp4
+*.png
+*.jpeg
+*.jpg
+backend/AI/data/*

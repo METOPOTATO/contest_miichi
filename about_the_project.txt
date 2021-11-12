@@ -1,0 +1,43 @@
+Phase 1:September: Research and build core functions
+    Week 1: Research 
+        Tecchnologies
+        - Face detection
+        - Face recognition
+        - Backend: FastAPI
+        - Frontend: React, Bootstrap
+        - Database: MongoDB
+        Tools:
+        - VsCode
+        - Google Colab
+        - Anaconda
+        Devices:
+        - PC: OS Ubuntu
+        - Camera
+    Week 2:     
+        - Create simple interface
+        - Develop Face detection
+    Week 3 + 4:
+        - Learn and Code Face recognition model
+        - Test
+
+Phase 2:October: Build interface and improve model
+    Week 1: Build web
+        - Research and build Backend + Frontend
+        - Bui Face Recognition model
+    Week 2: Build web
+        - Research and build Backend + Frontend
+    Week 3: 
+        - Research and build Backend + Frontend
+    Week 4: Improve functions
+        - Test
+        - Improve web functions
+        - Improve models
+
+Phase 3:November: 
+    (Apply some new functions if possible)
+    Week 1:
+        - Build
+    Week 2:
+        - Test
+
+    
