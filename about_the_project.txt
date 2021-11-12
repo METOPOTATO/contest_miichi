@@ -39,10 +39,5 @@ Phase 3:November:
         - Build
     Week 2:
         - Test
-    Week 3:
-        - Last fix
-    Week 4:
-        - Release
-        - Summary
-    
+
     
