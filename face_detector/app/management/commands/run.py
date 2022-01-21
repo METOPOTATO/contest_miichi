@@ -1,7 +1,8 @@
+from tkinter.constants import E, LEFT, RIGHT
 from PIL import Image, ImageTk
 import numpy as np
 from tkinter import ttk
-from tkinter import Tk,Frame, Button,Label,Entry,Text,StringVar
+from tkinter import Tk,Frame, Button,Label,Entry,Text,StringVar, W, TOP
 import cv2
 import os
 import pyttsx3
@@ -27,7 +28,7 @@ face_model = load_model('app/management/commands/lib/facenet_keras.h5')
 def read_image_from_files(): # load_data
     # client = MongoClient('mongodb://localhost:27017')
     # db = client.contest_michi
-
+    print('Reload data')
     embeddings = []
     labels = []
     for person_files in  os.listdir(folder):
@@ -104,29 +105,39 @@ class MainPage(Frame):
         self.panel1 = Label(self)  
         self.panel1.pack(padx=10, pady=10)
 
+        self.panel2 = Label(self) #Label(self, bg='#fff', fg='#eee')  
+        self.panel2.pack()
+
+        self.arr_data = []
+
         self.employee_id = StringVar()
-        lbl_employee_id = Label(self.panel1, text = 'ID', font = ('calibre',10,'bold')) 
+        lbl_employee_id = Label(self.panel1, text = 'Select a person', font = ('calibre',10,'bold')) 
         self.textField_id = Entry(self.panel1,textvariable=self.employee_id,font=('calibre',10,'bold'))
-        # self.employee_name = StringVar()
-        # lbl_employee_name = Label(self.panel1, text = 'Name', font = ('calibre',10,'bold')) 
-        # self.textField_name = Entry(self.panel1,textvariable=self.employee_name,font=('calibre',10,'bold'))
+
         lbl_employee_id.grid(row=0,column=0)
-        # lbl_employee_name.grid(row=0,column=1)
 
         self.load_cbb()
         self.load_data_cbb()
 
-        btnSaveImage = Button(self, text="Save Image", command=self.take_photo)
-        btnSaveImage.pack()
+        btnSaveImage = Button(self.panel2, text="Save Image", command=self.take_photo, width=15)
+        btnSaveImage.grid(padx=15, pady=10,row=0,column=1)
 
-        btnReloadData = Button(self, text="ReloadData", command=self.load_data_cbb)
-        btnReloadData.pack()
+        self.lbl_num_img = Label(self.panel2, text="User images", width=15, bg='#eee')
+        self.lbl_num_img.grid(padx=0, pady=0,row=0,column=2)
+        # btnSaveImage.pack(anchor=W, side=TOP, padx=15, pady=10)
 
-        btnReloadTrainData = Button(self, text="Reload Images", command=self.read_load_from_DB)
-        btnReloadTrainData.pack()
+        btnReloadData = Button(self.panel2, text="ReloadData", command=self.load_data_cbb, width=15)
+        # btnReloadData.pack(anchor=E, side=TOP, padx=15 , pady=10)
+        btnReloadData.grid(padx=15, pady=10,row=0,column=0)
 
-        btnQuit = Button(self, text="Quit", command=self.controller.quit)
-        btnQuit.pack()
+        btnReloadTrainData = Button(self.panel2, text="Reload Images", command=self.read_load_from_DB, width=15)
+        # btnReloadTrainData.pack(anchor=E, side=RIGHT, padx=15, pady=10)
+        btnReloadTrainData.grid(padx=15, pady=10,row=1,column=0)
+
+        btnQuit = Button(self.panel2, text="Quit", command=self.controller.quit, width=15)
+        # btnQuit.pack(padx=15, pady=30)
+        btnQuit.grid(padx=15, pady=10,row=1,column=1)
+
 
     def destructor(self):
         self.controller.destroy()
@@ -174,24 +185,35 @@ class MainPage(Frame):
                         predict_probability = self.svc_model.predict_proba(current_embedding_tranformed)    
                         idx = predict[0]
                         probability = predict_probability[0,idx] * 100
+                        probability = round(probability, 4)
+
                         text = ''
                         
-                        if probability  >50:
+                        if probability  > 75:
                             name = str(self.out_encoder.inverse_transform(predict)[0])
-                            text = name +'-' + str(probability) 
+                            age = 'unknown'
+                            job = 'unknown'
+                            for d in self.arr_data:
+                                if d['name'] == name:
+                                    age = d['age']
+                                    job = d['job']
+
+                            text = name + ' ' + str(probability) 
+                            text2 = 'Age: ' + str(age) + ' Job: ' + str(job)
+
                             self.time_count +=1  
                             # print(text)
                             if self.time_count == 15 and self.current_name != name:
-
                                 self.say(name)
                                 self.current_name = name
                                 self.time_count = 0
                         else:
                             text = 'unknown'
                             self.time_count = 0
-                cv2.putText(frame, text, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,255,0), 2)
+                cv2.putText(frame, text, (x1, y1-35), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
+                cv2.putText(frame, text2, (x1, y1-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0,255,0), 2)
             except Exception as e:
-                  print(e)
+                pass
             
             image = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
             self.current_image = Image.fromarray(image)  
@@ -202,7 +224,15 @@ class MainPage(Frame):
 
     def load_data_cbb(self):
         people = People.objects.all()
+
         values = [p.name for p in people]
+        for p in people:
+            data = {
+                'name':p.name,
+                'age':p.age,
+                'job':p.job
+            }
+            self.arr_data.append(data)
         self.CBB['values'] = values
 
     def take_photo(self):
@@ -216,6 +246,8 @@ class MainPage(Frame):
                 path, dirs, files = next(os.walk(folder_user))
                 numcount = len(files)
             image = self.img_frame
+            text = f'{user}: {numcount} images'
+            self.lbl_num_img.config(text = text)
             new_file_dir = folder_user + f'/{user}_{numcount}.jpg'
             cv2.imwrite(new_file_dir, image)
 
@@ -234,8 +266,8 @@ class MainPage(Frame):
     def say(self,text):
         engine = pyttsx3.init()
         engine.setProperty('volume',1.0)
-        engine.setProperty('rate',100)
-        engine.say('Hello Mr ' +text)
+        engine.setProperty('rate',150)
+        engine.say('xin chào ' +text)
         engine.runAndWait()
 
 class App(Tk):
